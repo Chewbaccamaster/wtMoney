@@ -2,7 +2,7 @@
   "name": "wtmoney",
   "version": "1.0.0",
   "description": "",
-  "main": "money.js",
+  "main": "index.js",
   "scripts": {
     "test": "jest --notify --no-cache",
     "build": "babel money.js --presets babel-preset-stage-0 -o index.js"
