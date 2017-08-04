@@ -50,7 +50,9 @@ exports.default = function (moment) {
   };
 
   var convertToMoney = function convertToMoney(adList, dots) {
-    return function (timeStamp, trafSpeed) {
+    return function (_ref) {
+      var timeStamp = _ref.timeStamp,
+          trafSpeed = _ref.trafSpeed;
       return trafSpeed * getSiteAdRatio(adList, dots, timeStamp);
     };
   };

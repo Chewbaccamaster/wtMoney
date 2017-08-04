@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/ratik/wtMoney#readme",
   "dependencies": {
+    "wtTraffic": "git+https://github.com/ratik/wtTraffic.git",
     "wttraffic": "git+https://github.com/ratik/wtTraffic.git"
   },
   "devDependencies": {
