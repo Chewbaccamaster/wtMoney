@@ -162,7 +162,7 @@ exports.default = function (moment) {
   };
 };
 
-var _wtTraffic = require('wtTraffic');
+var _wtTraffic = require('wt-traffic');
 
 var _wtTraffic2 = _interopRequireDefault(_wtTraffic);
 
