@@ -1,13 +1,15 @@
-import { 
+import lib from './index';
+import moment from 'moment';
+const { 
   simplify,
-  moment,
   getMoneyTodaySum,
   getMoneyYesterdaySum,
   getMoneySpeed,
   getMoneyGraphData,
   getMoneyChange,
   getAdBudget,
-} from './'
+  getFakeMoney,
+} = lib(moment);
 import { range } from 'ramda'
 
 const startDay = moment.unix(0)
@@ -286,5 +288,26 @@ describe('getAdBudget', function() {
       },
       [ endYesterdayDot, dot1000 ]
     )).toBe(100)
+  })
+})
+
+describe('getFakeMoney', function() {
+  test('should return 2500', () => {
+    expect(getFakeMoney(
+      [ adPacket10000 ],
+      [ endYesterdayDot ]
+    )).toBe(2500)
+  })
+  test('should return 100', () => {
+    expect(getFakeMoney(
+      [ adPacket10000 ],
+      [ endYesterdayDot, dot1000 ]
+    )).toBe(100)
+  })
+  test('should return 0', () => {
+    expect(getFakeMoney(
+      [ ],
+      [ endYesterdayDot, dot1000 ]
+    )).toBe(0)
   })
 })

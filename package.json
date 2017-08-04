@@ -1,0 +1,32 @@
+{
+  "name": "wtmoney",
+  "version": "1.0.0",
+  "description": "",
+  "main": "money.js",
+  "scripts": {
+    "test": "jest --notify --no-cache",
+    "build": "babel money.js --presets babel-preset-stage-0 -o index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ratik/wtMoney.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ratik/wtMoney/issues"
+  },
+  "homepage": "https://github.com/ratik/wtMoney#readme",
+  "dependencies": {
+    "wttraffic": "git+https://github.com/ratik/wtTraffic.git"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "jest": "^20.0.4",
+    "moment": "^2.18.1",
+    "ramda": "^0.24.1"
+  }
+}
