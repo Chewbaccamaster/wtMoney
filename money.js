@@ -35,7 +35,7 @@ export default function(moment) {
   })
 
   const convertToMoney = (adList, dots) => {
-    return (timeStamp, trafSpeed) => trafSpeed * getSiteAdRatio(adList, dots, timeStamp)
+    return ({ timeStamp, trafSpeed }) => trafSpeed * getSiteAdRatio(adList, dots, timeStamp)
   }
 
   const getMoneyTodaySum = (adList, dots) => {
