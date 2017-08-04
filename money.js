@@ -1,4 +1,4 @@
-import traffic from 'wtTraffic';
+import traffic from 'wt-traffic';
 const last = (arr) => arr[arr.length-1];
 
 export default function(moment) {
