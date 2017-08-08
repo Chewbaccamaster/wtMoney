@@ -108,6 +108,31 @@ export default function(moment) {
 
     return getDataSum(dots, lastDotTimeStamp, timeStamp, converter)
   }
+  
+  const getAdMoneyTimeEnd = (adPacket, dots) => {
+    const { moneyRatio, startDate, earned, earnedTs, budget, endDate } = adPacket
+    if (earnedTs && earned >= budget) return earnedTs
+    const fakePeriodStart = earnedTs || startDate
+
+    if (earned + getDataSum(dots, fakePeriodStart, endDate) * moneyRatio <= budget) return endDate
+
+    const restMoney = budget - earned
+    let desiredFromTs = fakePeriodStart
+    let desiredToTs = endDate
+    let desiredTs = (desiredToTs + desiredFromTs) / 2
+    let deltaMoney = restMoney
+
+    do {
+      const desiredMoney = getDataSum(dots, fakePeriodStart, desiredTs) * moneyRatio
+      deltaMoney = restMoney - desiredMoney
+
+      if (deltaMoney >= 0) desiredFromTs = desiredTs
+      if (deltaMoney <= 0) desiredToTs = desiredTs
+      desiredTs = (desiredToTs + desiredFromTs) / 2
+    } while (Math.abs(desiredToTs - desiredFromTs) > 5)
+
+    return Math.ceil(desiredTs)
+  }
 
   return {
     getMoneyTodaySum,
@@ -117,6 +142,7 @@ export default function(moment) {
     getMoneyChange,
     getAdBudget,
     getFakeMoney,
+    getAdMoneyTimeEnd,
     simplify
   };
 }
