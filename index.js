@@ -24,7 +24,7 @@ exports.default = function (moment) {
 
       var isEnded = earnedTs && earned >= budget;
       var endDate = isEnded ? earnedTs : adPacket.endDate;
-      var inInterval = timeStamp >= startDate && timeStamp <= endDate;
+      var inInterval = timeStamp > startDate && timeStamp <= endDate;
       var fakePeriodStart = earnedTs || startDate;
       var tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart;
 
