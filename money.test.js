@@ -347,6 +347,7 @@ describe('getAdMoneyTimeEnd', function() {
         },
         [ endYesterdayDot ]
       )
+      - adPacket10000.startDate
     ).toBeLessThan(5)
   })
 })
