@@ -14,7 +14,7 @@ export default function(moment) {
     const { moneyRatio, startDate, earned, earnedTs, budget } = adPacket
     const isEnded = earnedTs && earned >= budget
     const endDate = isEnded ? earnedTs : adPacket.endDate
-    const inInterval = timeStamp > startDate && timeStamp <= endDate
+    const inInterval = timeStamp >= startDate && timeStamp <= endDate
     const fakePeriodStart = earnedTs || startDate
     const tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart
 

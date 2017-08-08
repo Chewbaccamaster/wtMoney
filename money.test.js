@@ -187,7 +187,7 @@ describe('getMoneyGraphData', function() {
       },
     ])
   })
-  test('should return 2 dots', () => {
+  test('should return many dots', () => {
     expect(getMoneyGraphData(
       [ adPacket10000, adPacket100 ],
       [ endYesterdayDot ],
@@ -201,7 +201,7 @@ describe('getMoneyGraphData', function() {
       }))
     )
   })
-  test('should return 2 dots', () => {
+  test('should return many dots', () => {
     expect(getMoneyGraphData(
       [ adPacket100 ],
       [ { 

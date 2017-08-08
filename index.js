@@ -24,7 +24,7 @@ exports.default = function (moment) {
 
       var isEnded = earnedTs && earned >= budget;
       var endDate = isEnded ? earnedTs : adPacket.endDate;
-      var inInterval = timeStamp > startDate && timeStamp <= endDate;
+      var inInterval = timeStamp >= startDate && timeStamp <= endDate;
       var fakePeriodStart = earnedTs || startDate;
       var tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart;
 
@@ -150,6 +150,37 @@ exports.default = function (moment) {
     return getDataSum(dots, lastDotTimeStamp, timeStamp, converter);
   };
 
+  var getAdMoneyTimeEnd = function getAdMoneyTimeEnd(adPacket, dots) {
+    var moneyRatio = adPacket.moneyRatio,
+        startDate = adPacket.startDate,
+        earned = adPacket.earned,
+        earnedTs = adPacket.earnedTs,
+        budget = adPacket.budget,
+        endDate = adPacket.endDate;
+
+    if (earnedTs && earned >= budget) return earnedTs;
+    var fakePeriodStart = earnedTs || startDate;
+
+    if (earned + getDataSum(dots, fakePeriodStart, endDate) * moneyRatio <= budget) return endDate;
+
+    var restMoney = budget - earned;
+    var desiredFromTs = fakePeriodStart;
+    var desiredToTs = endDate;
+    var desiredTs = (desiredToTs + desiredFromTs) / 2;
+    var deltaMoney = restMoney;
+
+    do {
+      var desiredMoney = getDataSum(dots, fakePeriodStart, desiredTs) * moneyRatio;
+      deltaMoney = restMoney - desiredMoney;
+
+      if (deltaMoney >= 0) desiredFromTs = desiredTs;
+      if (deltaMoney <= 0) desiredToTs = desiredTs;
+      desiredTs = (desiredToTs + desiredFromTs) / 2;
+    } while (Math.abs(desiredToTs - desiredFromTs) > 5);
+
+    return Math.ceil(desiredTs);
+  };
+
   return {
     getMoneyTodaySum: getMoneyTodaySum,
     getMoneyYesterdaySum: getMoneyYesterdaySum,
@@ -158,6 +189,7 @@ exports.default = function (moment) {
     getMoneyChange: getMoneyChange,
     getAdBudget: getAdBudget,
     getFakeMoney: getFakeMoney,
+    getAdMoneyTimeEnd: getAdMoneyTimeEnd,
     simplify: simplify
   };
 };
