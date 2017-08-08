@@ -9,6 +9,7 @@ const {
   getMoneyChange,
   getAdBudget,
   getFakeMoney,
+  getAdMoneyTimeEnd,
 } = lib(moment);
 import { range } from 'ramda'
 
@@ -309,5 +310,43 @@ describe('getFakeMoney', function() {
       [ ],
       [ endYesterdayDot, dot1000 ]
     )).toBe(0)
+  })
+})
+
+describe('getAdMoneyTimeEnd', function() {
+  test('should return < 5', () => {
+    expect(
+      getAdMoneyTimeEnd(
+        { 
+          ...adPacket10000,
+          budget: 100,
+        },
+        [ endYesterdayDot ]
+      )
+      - (adPacket10000.startDate + 60 * 60)
+    ).toBeLessThan(5)
+  })
+  test('should return < 5', () => {
+    expect(
+      getAdMoneyTimeEnd(
+        { 
+          ...adPacket10000,
+          budget: 1000,
+        },
+        [ endYesterdayDot ]
+      )
+      - (adPacket10000.startDate + 10 * 60 * 60)
+    ).toBeLessThan(5)
+  })
+  test('should return < 5', () => {
+    expect(
+      getAdMoneyTimeEnd(
+        { 
+          ...adPacket10000,
+          budget: 0,
+        },
+        [ endYesterdayDot ]
+      )
+    ).toBeLessThan(5)
   })
 })
