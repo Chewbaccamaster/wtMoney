@@ -15,6 +15,7 @@ exports.default = function (moment) {
       simplify = _traffic.simplify;
 
   var getSiteAdRatio = function getSiteAdRatio(adList, dots, timeStamp) {
+    var isConverter = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     return adList.reduce(function (sumRatio, adPacket) {
       var moneyRatio = adPacket.moneyRatio,
           startDate = adPacket.startDate,
@@ -24,7 +25,7 @@ exports.default = function (moment) {
 
       var isEnded = earnedTs && earned >= budget;
       var endDate = isEnded ? earnedTs : adPacket.endDate;
-      var inInterval = timeStamp >= startDate && timeStamp <= endDate;
+      var inInterval = isConverter ? timeStamp > startDate && timeStamp <= endDate : timeStamp >= startDate && timeStamp <= endDate;
       var fakePeriodStart = earnedTs || startDate;
       var tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart;
 
@@ -53,7 +54,7 @@ exports.default = function (moment) {
     return function (_ref) {
       var timeStamp = _ref.timeStamp,
           trafSpeed = _ref.trafSpeed;
-      return trafSpeed * getSiteAdRatio(adList, dots, timeStamp);
+      return trafSpeed * getSiteAdRatio(adList, dots, timeStamp, true);
     };
   };
 

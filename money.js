@@ -10,11 +10,13 @@ export default function(moment) {
     simplify
   } = traffic(moment);
 
-  const getSiteAdRatio = (adList, dots, timeStamp) => adList.reduce((sumRatio, adPacket) => {
+  const getSiteAdRatio = (adList, dots, timeStamp, isConverter = false) => adList.reduce((sumRatio, adPacket) => {
     const { moneyRatio, startDate, earned, earnedTs, budget } = adPacket
     const isEnded = earnedTs && earned >= budget
     const endDate = isEnded ? earnedTs : adPacket.endDate
-    const inInterval = timeStamp >= startDate && timeStamp <= endDate
+    const inInterval = isConverter 
+      ? timeStamp > startDate && timeStamp <= endDate
+      : timeStamp >= startDate && timeStamp <= endDate
     const fakePeriodStart = earnedTs || startDate
     const tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart
 
@@ -35,7 +37,7 @@ export default function(moment) {
   })
 
   const convertToMoney = (adList, dots) => {
-    return ({ timeStamp, trafSpeed }) => trafSpeed * getSiteAdRatio(adList, dots, timeStamp)
+    return ({ timeStamp, trafSpeed }) => trafSpeed * getSiteAdRatio(adList, dots, timeStamp, true)
   }
 
   const getMoneyTodaySum = (adList, dots) => {
