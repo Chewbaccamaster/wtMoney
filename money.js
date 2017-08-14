@@ -48,6 +48,7 @@ export default function(moment) {
             return total += budget - earned - getDataSum(dots, earnedTs, dot.ts) * moneyRatio
           }
         }
+
         return total += trafSpeed * adRatio * dotPeriod
       }, 0)
 
