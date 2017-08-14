@@ -167,17 +167,18 @@ exports.default = function (moment) {
     var restMoney = budget - earned;
     var desiredFromTs = fakePeriodStart;
     var desiredToTs = endDate;
-    var desiredTs = (desiredToTs + desiredFromTs) / 2;
+    var desiredTs = null;
     var deltaMoney = restMoney;
+    var isDotNotFound = true;
 
     do {
-      var desiredMoney = getDataSum(dots, fakePeriodStart, desiredTs) * moneyRatio;
-      deltaMoney = restMoney - desiredMoney;
+      desiredTs = (desiredToTs + desiredFromTs) / 2;
+      deltaMoney = restMoney - getDataSum(dots, fakePeriodStart, desiredTs) * moneyRatio;
+      isDotNotFound = Math.abs(desiredToTs - desiredFromTs) > 5;
 
       if (deltaMoney >= 0) desiredFromTs = desiredTs;
       if (deltaMoney <= 0) desiredToTs = desiredTs;
-      desiredTs = (desiredToTs + desiredFromTs) / 2;
-    } while (Math.abs(desiredToTs - desiredFromTs) > 5);
+    } while (isDotNotFound);
 
     return Math.ceil(desiredTs);
   };

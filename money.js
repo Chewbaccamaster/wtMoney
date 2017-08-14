@@ -1,5 +1,5 @@
-import traffic from 'wt-traffic';
-const last = (arr) => arr[arr.length-1];
+import traffic from 'wt-traffic'
+const last = array => array[array.length-1]
 
 export default function(moment) {
   const {  
@@ -121,17 +121,18 @@ export default function(moment) {
     const restMoney = budget - earned
     let desiredFromTs = fakePeriodStart
     let desiredToTs = endDate
-    let desiredTs = (desiredToTs + desiredFromTs) / 2
+    let desiredTs = null
     let deltaMoney = restMoney
+    let isDotNotFound = true
 
     do {
-      const desiredMoney = getDataSum(dots, fakePeriodStart, desiredTs) * moneyRatio
-      deltaMoney = restMoney - desiredMoney
+      desiredTs = (desiredToTs + desiredFromTs) / 2
+      deltaMoney = restMoney - getDataSum(dots, fakePeriodStart, desiredTs) * moneyRatio
+      isDotNotFound = Math.abs(desiredToTs - desiredFromTs) > 5
 
       if (deltaMoney >= 0) desiredFromTs = desiredTs
       if (deltaMoney <= 0) desiredToTs = desiredTs
-      desiredTs = (desiredToTs + desiredFromTs) / 2
-    } while (Math.abs(desiredToTs - desiredFromTs) > 5)
+    } while (isDotNotFound)
 
     return Math.ceil(desiredTs)
   }
@@ -145,7 +146,7 @@ export default function(moment) {
     getAdBudget,
     getFakeMoney,
     getAdMoneyTimeEnd,
-    simplify
-  };
+    simplify,
+  }
 }
 
