@@ -37,7 +37,22 @@ export default function(moment) {
   })
 
   const convertToMoney = (adList, dots) => {
-    return ({ timeStamp, trafSpeed }) => trafSpeed * getSiteAdRatio(adList, dots, timeStamp, true)
+    return ({ timeStamp, trafSpeed, dot, dotPeriod }) => {
+      const sumPeriodMoney = adList.reduce((total, adPacket) => {
+        const { earnedTs, earned, moneyRatio, budget } = adPacket
+        const adRatio = getSiteAdRatio([ adPacket ], dots, timeStamp, true)
+        if (adRatio === 0) {
+          const prevDotAdRatio = getSiteAdRatio([ adPacket ], dots, dot.ts, true)
+
+          if (prevDotAdRatio > 0) {
+            return total += budget - earned - getDataSum(dots, earnedTs, dot.ts) * moneyRatio
+          }
+        }
+        return total += trafSpeed * adRatio * dotPeriod
+      }, 0)
+
+      return dotPeriod > 0 ? sumPeriodMoney / dotPeriod : 0
+    }
   }
 
   const getMoneyTodaySum = (adList, dots) => {

@@ -53,8 +53,28 @@ exports.default = function (moment) {
   var convertToMoney = function convertToMoney(adList, dots) {
     return function (_ref) {
       var timeStamp = _ref.timeStamp,
-          trafSpeed = _ref.trafSpeed;
-      return trafSpeed * getSiteAdRatio(adList, dots, timeStamp, true);
+          trafSpeed = _ref.trafSpeed,
+          dot = _ref.dot,
+          dotPeriod = _ref.dotPeriod;
+
+      var sumPeriodMoney = adList.reduce(function (total, adPacket) {
+        var earnedTs = adPacket.earnedTs,
+            earned = adPacket.earned,
+            moneyRatio = adPacket.moneyRatio,
+            budget = adPacket.budget;
+
+        var adRatio = getSiteAdRatio([adPacket], dots, timeStamp, true);
+        if (adRatio === 0) {
+          var prevDotAdRatio = getSiteAdRatio([adPacket], dots, dot.ts, true);
+
+          if (prevDotAdRatio > 0) {
+            return total += budget - earned - getDataSum(dots, earnedTs, dot.ts) * moneyRatio;
+          }
+        }
+        return total += trafSpeed * adRatio * dotPeriod;
+      }, 0);
+
+      return dotPeriod > 0 ? sumPeriodMoney / dotPeriod : 0;
     };
   };
 
@@ -202,6 +222,6 @@ var _wtTraffic2 = _interopRequireDefault(_wtTraffic);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var last = function last(arr) {
-  return arr[arr.length - 1];
+var last = function last(array) {
+  return array[array.length - 1];
 };

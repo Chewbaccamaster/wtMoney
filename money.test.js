@@ -78,6 +78,18 @@ describe('getMoneyTodaySum', function() {
       [ endYesterdayDot, dot1000 ]
     )).toBe(simplify(1000 * 0.1))
   })
+  test('should return 83', () => {
+    expect(getMoneyTodaySum(
+      [ {
+        ...adPacket10000,
+        startDate: startDay - 10,
+        earned: 5,
+        earnedTs: startDay,
+        budget: 88,
+      } ],
+      [ endYesterdayDot ]
+    )).toBe(simplify(83))
+  })
   test('should return 100 * 0.1', () => {
     expect(getMoneyTodaySum(
       [ adPacket10000 ],
@@ -104,6 +116,15 @@ describe('getMoneyYesterdaySum', function() {
       [ adPacket10000 ],
       [ endYesterdayDot, dot1000 ]
     )).toBe(2400)
+  })
+  test('should return 88', () => {
+    expect(getMoneyYesterdaySum(
+      [ {
+        ...adPacket10000,
+        budget: 133,
+      } ],
+      [ endYesterdayDot, dot1000 ]
+    )).toBe(simplify(133))
   })
   test('should return 120', () => {
     expect(getMoneyYesterdaySum(
