@@ -74,6 +74,10 @@ exports.default = function (moment) {
             var uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0;
             return total += budget - earned - uncountedMoney;
           }
+          if (startDate >= dot.ts && trafSpeed * moneyRatio > budget) {
+            // ad between two points
+            return total += budget;
+          }
         }
 
         return total += trafSpeed * adRatio * dotPeriod;
