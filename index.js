@@ -58,25 +58,48 @@ exports.default = function (moment) {
           dotPeriod = _ref.dotPeriod;
 
       var sumPeriodMoney = adList.reduce(function (total, adPacket) {
-        var earnedTs = adPacket.earnedTs,
+        var startDate = adPacket.startDate,
             earned = adPacket.earned,
             moneyRatio = adPacket.moneyRatio,
-            budget = adPacket.budget;
+            budget = adPacket.budget,
+            endDate = adPacket.endDate;
 
+        var earnedTs = adPacket.earnedTs || startDate;
         var adRatio = getSiteAdRatio([adPacket], dots, timeStamp, true);
+
         if (adRatio === 0) {
           var prevDotAdRatio = getSiteAdRatio([adPacket], dots, dot.ts, true);
-
           if (prevDotAdRatio > 0) {
-            return total += budget - earned - getDataSum(dots, earnedTs, dot.ts) * moneyRatio;
+            // money between earned dot and previous dot
+            var uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0;
+            return total += budget - earned - uncountedMoney;
           }
         }
 
         return total += trafSpeed * adRatio * dotPeriod;
       }, 0);
 
+      // return money speed
       return dotPeriod > 0 ? sumPeriodMoney / dotPeriod : 0;
     };
+  };
+
+  var getMoneySum = function getMoneySum(adList, dots, fromTs, toTs) {
+    var filteredAdList = filterAdList(adList, fromTs, toTs);
+
+    return filteredAdList.reduce(function (sum, adPacket) {
+      var startDate = adPacket.startDate,
+          endDate = adPacket.endDate,
+          earnedTs = adPacket.earnedTs,
+          status = adPacket.status;
+      // accelerated processing of ads that are placed in the "fromTs - toTs" range
+
+      if (status === AD_ENDED && startDate >= fromTs && earnedTs <= toTs) return sum += adPacket.earned;
+
+      var converter = convertToMoney([adPacket], dots);
+      var realToTs = Math.min(toTs, endDate);
+      return sum += getDataSum(dots, fromTs, realToTs, converter);
+    }, 0);
   };
 
   var getMoneyTodaySum = function getMoneyTodaySum(adList, dots) {
@@ -86,10 +109,7 @@ exports.default = function (moment) {
         timeStartDay = _getTimeStamps.timeStartDay,
         timeNow = _getTimeStamps.timeNow;
 
-    var filteredAdList = filterAdList(adList, timeStartDay, timeNow);
-    var converter = convertToMoney(filteredAdList, dots);
-
-    return getDataSum(dots, timeStartDay, timeNow, converter);
+    return getMoneySum(adList, dots, timeStartDay, timeNow);
   };
 
   var getMoneyYesterdaySum = function getMoneyYesterdaySum(adList, dots) {
@@ -101,10 +121,7 @@ exports.default = function (moment) {
         timeStartDay = _getTimeStamps2.timeStartDay,
         timeEndDay = _getTimeStamps2.timeEndDay;
 
-    var filteredAdList = filterAdList(adList, timeStartDay, timeEndDay);
-    var converter = convertToMoney(filteredAdList, dots);
-
-    return getDataSum(dots, timeStartDay, timeEndDay, converter);
+    return getMoneySum(adList, dots, timeStartDay, timeEndDay);
   };
 
   var getMoneySpeed = function getMoneySpeed(adList, dots) {
@@ -226,3 +243,4 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var last = function last(array) {
   return array[array.length - 1];
 };
+var AD_ENDED = 2;

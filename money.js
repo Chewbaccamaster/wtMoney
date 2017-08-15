@@ -1,5 +1,6 @@
 import traffic from 'wt-traffic'
 const last = array => array[array.length-1]
+const AD_ENDED = 2
 
 export default function(moment) {
   const {  
@@ -39,31 +40,46 @@ export default function(moment) {
   const convertToMoney = (adList, dots) => {
     return ({ timeStamp, trafSpeed, dot, dotPeriod }) => {
       const sumPeriodMoney = adList.reduce((total, adPacket) => {
-        const { earnedTs, earned, moneyRatio, budget } = adPacket
+        const { startDate, earned, moneyRatio, budget, endDate } = adPacket
+        const earnedTs = adPacket.earnedTs || startDate
         const adRatio = getSiteAdRatio([ adPacket ], dots, timeStamp, true)
+
         if (adRatio === 0) {
           const prevDotAdRatio = getSiteAdRatio([ adPacket ], dots, dot.ts, true)
-
           if (prevDotAdRatio > 0) {
-            return total += budget - earned - getDataSum(dots, earnedTs, dot.ts) * moneyRatio
+            // money between earned dot and previous dot
+            const uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0
+            return total += budget - earned - uncountedMoney
           }
         }
 
         return total += trafSpeed * adRatio * dotPeriod
       }, 0)
 
+      // return money speed
       return dotPeriod > 0 ? sumPeriodMoney / dotPeriod : 0
     }
+  }
+
+  const getMoneySum = (adList, dots, fromTs, toTs) => {
+    const filteredAdList = filterAdList(adList, fromTs, toTs)
+
+    return filteredAdList.reduce((sum, adPacket) => {
+      const { startDate, endDate, earnedTs, status } = adPacket
+      // accelerated processing of ads that are placed in the "fromTs - toTs" range
+      if (status === AD_ENDED && startDate >= fromTs && earnedTs <= toTs) return sum += adPacket.earned
+
+      const converter = convertToMoney([ adPacket ], dots)
+      const realToTs = Math.min(toTs, endDate)
+      return sum += getDataSum(dots, fromTs, realToTs, converter)
+    }, 0)
   }
 
   const getMoneyTodaySum = (adList, dots) => {
     if (!adList || !adList.length || !dots || !dots.length) return 0
 
     const { timeStartDay, timeNow } = getTimeStamps()
-    const filteredAdList = filterAdList(adList, timeStartDay, timeNow)
-    const converter = convertToMoney(filteredAdList, dots)
-
-    return getDataSum(dots, timeStartDay, timeNow, converter)
+    return getMoneySum(adList, dots, timeStartDay, timeNow)
   }
 
   const getMoneyYesterdaySum = (adList, dots) => {
@@ -71,10 +87,7 @@ export default function(moment) {
 
     const timeStamp = moment().subtract(1, 'day').unix()
     const { timeStartDay, timeEndDay } = getTimeStamps(timeStamp)
-    const filteredAdList = filterAdList(adList, timeStartDay, timeEndDay)
-    const converter = convertToMoney(filteredAdList, dots)
-
-    return getDataSum(dots, timeStartDay, timeEndDay, converter)
+    return getMoneySum(adList, dots, timeStartDay, timeEndDay)
   }
 
   const getMoneySpeed = (adList, dots, period = 'today') => {
