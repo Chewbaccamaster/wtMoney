@@ -8,7 +8,8 @@ export default function(moment) {
     getDataSum, 
     getTrafficGraphData, 
     getTrafficSpeed,
-    simplify
+    simplify,
+    numberCompare,
   } = traffic(moment);
 
   const getSiteAdRatio = (adList, dots, timeStamp, isConverter = false) => adList.reduce((sumRatio, adPacket) => {
@@ -115,12 +116,7 @@ export default function(moment) {
 
     const nowSpeed = getMoneySpeed(adList, dots, 'today')
     const yesterdaySpeed = getMoneySpeed(adList, dots, 'yesterday')
-    const delta = nowSpeed - yesterdaySpeed
-    const equallyDelta = Math.max(5, Math.max(nowSpeed, yesterdaySpeed) * 0.05)
-
-    if (Math.abs(delta) <= equallyDelta) return 0
-    if (delta > 0) return 1
-    return -1
+    return numberCompare(nowSpeed, yesterdaySpeed)
   }
 
   const getAdBudget = (adPacket, dots, timeStamp = null) => {

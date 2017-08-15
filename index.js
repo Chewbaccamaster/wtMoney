@@ -12,7 +12,8 @@ exports.default = function (moment) {
       getDataSum = _traffic.getDataSum,
       getTrafficGraphData = _traffic.getTrafficGraphData,
       getTrafficSpeed = _traffic.getTrafficSpeed,
-      simplify = _traffic.simplify;
+      simplify = _traffic.simplify,
+      numberCompare = _traffic.numberCompare;
 
   var getSiteAdRatio = function getSiteAdRatio(adList, dots, timeStamp) {
     var isConverter = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
@@ -154,12 +155,7 @@ exports.default = function (moment) {
 
     var nowSpeed = getMoneySpeed(adList, dots, 'today');
     var yesterdaySpeed = getMoneySpeed(adList, dots, 'yesterday');
-    var delta = nowSpeed - yesterdaySpeed;
-    var equallyDelta = Math.max(5, Math.max(nowSpeed, yesterdaySpeed) * 0.05);
-
-    if (Math.abs(delta) <= equallyDelta) return 0;
-    if (delta > 0) return 1;
-    return -1;
+    return numberCompare(nowSpeed, yesterdaySpeed);
   };
 
   var getAdBudget = function getAdBudget(adPacket, dots) {
