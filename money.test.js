@@ -168,7 +168,7 @@ describe('getMoneyYesterdaySum', function() {
       [ endYesterdayDot, dot1000 ]
     )).toBe(simplify(250))
   })
-  test('should return 0', () => {
+  test('should return 2.4', () => {
     expect(getMoneyYesterdaySum(
       [ adPacket10000 ],
       [ { 
@@ -209,8 +209,6 @@ describe('getMoneySpeed', function() {
       } ],
       [ dot1000 ]
     )).toBe(0)
-  })
-  test('should return 0', () => {
     expect(getMoneySpeed(
       [ ],
       [ ]
@@ -274,8 +272,6 @@ describe('getMoneyGraphData', function() {
       [ adPacket10000 ],
       [ ]
     )).toEqual([ ])
-  })
-  test('should return []', () => {
     expect(getMoneyGraphData(
       [ ],
       [ ]
@@ -307,8 +303,6 @@ describe('getMoneyChange', function() {
       [ adPacket10000 ],
       [ dotGeneric ]
     )).toBe(0)
-  })
-  test('should return 0', () => {
     expect(getMoneyChange(
       [ ],
       [ ]
@@ -376,8 +370,6 @@ describe('getAdMoneyTimeEnd', function() {
       )
       - (adPacket10000.startDate + 60 * 60)
     ).toBeLessThan(5)
-  })
-  test('should return < 5', () => {
     expect(
       getAdMoneyTimeEnd(
         { 
@@ -388,8 +380,6 @@ describe('getAdMoneyTimeEnd', function() {
       )
       - (adPacket10000.startDate + 10 * 60 * 60)
     ).toBeLessThan(5)
-  })
-  test('should return < 5', () => {
     expect(
       getAdMoneyTimeEnd(
         { 
