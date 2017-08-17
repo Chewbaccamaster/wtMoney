@@ -364,6 +364,12 @@ describe('getFakeMoney', function() {
       [ endYesterdayDot, dot1000 ]
     )).toBe(100)
   })
+  test('should return 50', () => {
+    expect(getFakeMoney(
+      [ { ...adPacket10000, startDate: startDay + 30 * 60 } ],
+      [ dot1000, { ...dot1000, ts: startDay + 30 * 60 } ]
+    )).toBe(50)
+  })
   test('should return 0', () => {
     expect(getFakeMoney(
       [ ],

@@ -52,7 +52,7 @@ export default function(moment) {
             const uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0
             return total += budget - earned - uncountedMoney
           }
-          if (startDate >= dot.ts && startDate < timeStamp && trafSpeed * moneyRatio > budget) {
+          if (startDate >= dot.ts && startDate < timeStamp && trafSpeed * moneyRatio * dotPeriod > budget) {
             // ad between two points
             return total += budget
           }
@@ -131,12 +131,11 @@ export default function(moment) {
 
   const getFakeMoney = (adList, dots, timeStamp = null) => {
     if (!adList || !adList.length || !dots || !dots.length) return 0
-    timeStamp = timeStamp|| moment().unix()
+    timeStamp = timeStamp || moment().unix()
 
     const lastDotTimeStamp = last(dots.sort((a, b) => a.ts - b.ts)).ts
     const filteredAdList = filterAdList(adList, lastDotTimeStamp, timeStamp)
     const converter = convertToMoney(filteredAdList, dots)
-
     return getDataSum(dots, lastDotTimeStamp, timeStamp, converter)
   }
   
