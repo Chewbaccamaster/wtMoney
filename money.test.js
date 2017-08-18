@@ -243,7 +243,7 @@ describe('getMoneyGraphData', function() {
         isTrimmed: false,
       },
       {
-        x: 0.04,
+        x: simplify(1 / 24, 4),
         y: Math.round((3000 * 0.12 + 1 + 2 + 3) * 0.2),
         ts: startDay + 60 * 60,
         isTrimmed: false,
@@ -257,7 +257,7 @@ describe('getMoneyGraphData', function() {
       'yesterday'
     )).toEqual(
       range(0, 25).map(index => ({
-        x: simplify(index / 24),
+        x: simplify(index / 24, 4),
         y: 1000 * (index <= 1 ? 0.2 : 0.1),
         ts: moment.unix(startDay).subtract(1, 'day').add(index, 'hour').unix(),
         isTrimmed: false,
@@ -274,7 +274,7 @@ describe('getMoneyGraphData', function() {
       'yesterday',
     )).toEqual(
       range(0, 25).map(index => ({
-        x: simplify(index / 24),
+        x: simplify(index / 24, 4),
         y: index <= 20 ? 5 : 0,
         ts: moment.unix(startDay).subtract(1, 'day').add(index, 'hour').unix(),
         isTrimmed: true,
