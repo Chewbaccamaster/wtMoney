@@ -18,6 +18,9 @@ exports.default = function (moment) {
   var getSiteAdRatio = function getSiteAdRatio(adList, dots, timeStamp) {
     var isConverter = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     return adList.reduce(function (sumRatio, adPacket) {
+      if (!Array.isArray(adList)) throw 'adList is not array';
+      if (!Array.isArray(dots)) throw 'dots is not array';
+      if (typeof timeStamp !== 'number') throw 'timeStamp is not a number';
       var moneyRatio = adPacket.moneyRatio,
           startDate = adPacket.startDate,
           earned = adPacket.earned,
@@ -90,6 +93,10 @@ exports.default = function (moment) {
   };
 
   var getMoneySum = function getMoneySum(adList, dots, fromTs, toTs) {
+    if (!Array.isArray(adList)) throw 'adList is not array';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (typeof fromTs !== 'number') throw 'fromTs is not a number';
+    if (typeof toTs !== 'number') throw 'fromTs is not a number';
     var filteredAdList = filterAdList(adList, fromTs, toTs);
 
     return filteredAdList.reduce(function (sum, adPacket) {
@@ -108,7 +115,9 @@ exports.default = function (moment) {
   };
 
   var getMoneyTodaySum = function getMoneyTodaySum(adList, dots) {
-    if (!adList || !adList.length || !dots || !dots.length) return 0;
+    if (!Array.isArray(adList)) throw 'adList is not array';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!adList.length || !dots.length) return 0;
 
     var _getTimeStamps = getTimeStamps(),
         timeStartDay = _getTimeStamps.timeStartDay,
@@ -118,7 +127,9 @@ exports.default = function (moment) {
   };
 
   var getMoneyYesterdaySum = function getMoneyYesterdaySum(adList, dots) {
-    if (!adList || !adList.length || !dots || !dots.length) return 0;
+    if (!Array.isArray(adList)) throw 'adList is not array';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!adList.length || !dots.length) return 0;
 
     var timeStamp = moment().subtract(1, 'day').unix();
 
@@ -132,7 +143,9 @@ exports.default = function (moment) {
   var getMoneySpeed = function getMoneySpeed(adList, dots) {
     var period = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'today';
 
-    if (!adList || !adList.length || !dots || !dots.length) return 0;
+    if (!Array.isArray(adList)) throw 'adList is not array';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!adList.length || !dots.length) return 0;
 
     var timeStamp = period === 'yesterday' ? moment().subtract(1, 'day').unix() : moment().unix();
     return getTrafficSpeed(dots, period).total * getSiteAdRatio(adList, dots, timeStamp);
@@ -141,7 +154,9 @@ exports.default = function (moment) {
   var getMoneyGraphData = function getMoneyGraphData(adList, dots) {
     var period = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'today';
 
-    if (!adList || !adList.length || !dots || !dots.length) return [];
+    if (!Array.isArray(adList)) throw 'adList is not array';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!adList.length || !dots.length) return [];
 
     return getTrafficGraphData(dots, period).map(function (dot) {
       return _extends({}, dot, {
@@ -151,7 +166,9 @@ exports.default = function (moment) {
   };
 
   var getMoneyChange = function getMoneyChange(adList, dots) {
-    if (!adList || !adList.length || !dots || !dots.length) return 0;
+    if (!Array.isArray(adList)) throw 'adList is not array';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!adList.length || !dots.length) return 0;
 
     var nowSpeed = getMoneySpeed(adList, dots, 'today');
     var yesterdaySpeed = getMoneySpeed(adList, dots, 'yesterday');
@@ -161,7 +178,9 @@ exports.default = function (moment) {
   var getAdBudget = function getAdBudget(adPacket, dots) {
     var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-    if (!adPacket || !dots || !dots.length) return 0;
+    if (!isObject(adPacket)) throw 'adPacket is not a object';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!adPacket || !dots.length) return 0;
 
     var timeNow = moment().unix();
     var moneyRatio = adPacket.moneyRatio,
@@ -177,7 +196,9 @@ exports.default = function (moment) {
   var getFakeMoney = function getFakeMoney(adList, dots) {
     var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-    if (!adList || !adList.length || !dots || !dots.length) return 0;
+    if (!Array.isArray(adList)) throw 'adList is not array';
+    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!adList.length || !dots.length) return 0;
     timeStamp = timeStamp || moment().unix();
 
     var lastDotTimeStamp = last(dots.sort(function (a, b) {
@@ -189,6 +210,8 @@ exports.default = function (moment) {
   };
 
   var getAdMoneyTimeEnd = function getAdMoneyTimeEnd(adPacket, dots) {
+    if (!isObject(adPacket)) throw 'adPacket is not a object';
+    if (!Array.isArray(dots)) throw 'dots is not array';
     var moneyRatio = adPacket.moneyRatio,
         startDate = adPacket.startDate,
         earned = adPacket.earned,
@@ -241,5 +264,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var last = function last(array) {
   return array[array.length - 1];
+};
+var isObject = function isObject(a) {
+  return !!a && a.constructor === Object;
 };
 var AD_ENDED = 2;

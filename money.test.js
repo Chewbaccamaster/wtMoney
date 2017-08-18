@@ -142,6 +142,11 @@ describe('getMoneyTodaySum', function() {
       [ ]
     )).toBe(0)
   })
+  test('should return throw', () => {
+    expect(() => getMoneyTodaySum()).toThrow()
+    expect(() => getMoneyTodaySum({})).toThrow()
+    expect(() => getMoneyTodaySum([], {})).toThrow()
+  })
 })
 
 describe('getMoneyYesterdaySum', function() {
@@ -200,6 +205,11 @@ describe('getMoneyYesterdaySum', function() {
       [ ]
     )).toBe(0)
   })
+  test('should return throw', () => {
+    expect(() => getMoneyYesterdaySum()).toThrow()
+    expect(() => getMoneyYesterdaySum({})).toThrow()
+    expect(() => getMoneyYesterdaySum([], {})).toThrow()
+  })
 })
 
 describe('getMoneySpeed', function() {
@@ -227,6 +237,11 @@ describe('getMoneySpeed', function() {
       [ ],
       [ ]
     )).toBe(0)
+  })
+  test('should return throw', () => {
+    expect(() => getMoneySpeed()).toThrow()
+    expect(() => getMoneySpeed({})).toThrow()
+    expect(() => getMoneySpeed([], {})).toThrow()
   })
 })
 
@@ -291,6 +306,11 @@ describe('getMoneyGraphData', function() {
       [ ]
     )).toEqual([ ])
   })
+  test('should return throw', () => {
+    expect(() => getMoneyGraphData()).toThrow()
+    expect(() => getMoneyGraphData({})).toThrow()
+    expect(() => getMoneyGraphData([], {})).toThrow()
+  })
 })
 
 describe('getMoneyChange', function() {
@@ -322,6 +342,11 @@ describe('getMoneyChange', function() {
       [ ]
     )).toBe(0)
   })
+  test('should return throw', () => {
+    expect(() => getMoneyChange()).toThrow()
+    expect(() => getMoneyChange({})).toThrow()
+    expect(() => getMoneyChange([], {})).toThrow()
+  })
 })
 
 describe('getAdBudget', function() {
@@ -349,6 +374,11 @@ describe('getAdBudget', function() {
       [ endYesterdayDot, dot1000 ]
     )).toBe(100)
   })
+  test('should return throw', () => {
+    expect(() => getAdBudget()).toThrow()
+    expect(() => getAdBudget([])).toThrow()
+    expect(() => getAdBudget({}, {})).toThrow()
+  })
 })
 
 describe('getFakeMoney', function() {
@@ -375,6 +405,11 @@ describe('getFakeMoney', function() {
       [ ],
       [ endYesterdayDot, dot1000 ]
     )).toBe(0)
+  })
+  test('should return throw', () => {
+    expect(() => getFakeMoney()).toThrow()
+    expect(() => getFakeMoney({})).toThrow()
+    expect(() => getFakeMoney([], {})).toThrow()
   })
 })
 
@@ -410,5 +445,10 @@ describe('getAdMoneyTimeEnd', function() {
       )
       - adPacket10000.startDate
     ).toBeLessThan(5)
+  })
+  test('should return throw', () => {
+    expect(() => getAdMoneyTimeEnd()).toThrow()
+    expect(() => getAdMoneyTimeEnd([])).toThrow()
+    expect(() => getAdMoneyTimeEnd({}, {})).toThrow()
   })
 })
