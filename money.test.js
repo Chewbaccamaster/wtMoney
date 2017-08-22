@@ -1,5 +1,6 @@
-import lib from './index';
-import moment from 'moment';
+import lib from './index'
+import moment from 'moment'
+
 const { 
   simplify,
   getMoneyTodaySum,
@@ -10,7 +11,8 @@ const {
   getAdBudget,
   getFakeMoney,
   getAdMoneyTimeEnd,
-} = lib(moment);
+} = lib(moment)
+
 import { range } from 'ramda'
 
 const startDay = moment.unix(0)
@@ -21,6 +23,7 @@ const startDay = moment.unix(0)
   .add(5, 'days')
   .unix()
 const endDate = moment.unix(startDay).add(1, 'day').unix()
+
 moment.now = jest.fn(() => (startDay + 1 * 60 * 60) * 1000)
 
 const adPacket10000 = {
@@ -32,7 +35,6 @@ const adPacket10000 = {
   earned: 0,
   earnedTs: null,
 }
-
 const adPacket100 = {
   startDate: moment.unix(startDay).subtract(1, 'day').unix(),
   endDate: moment.unix(endDate).add(1, 'day').unix(),
@@ -42,7 +44,6 @@ const adPacket100 = {
   earned: 0,
   earnedTs: null,
 }
-
 const dot1000 = {
   mail: 0,
   market: 1000,
@@ -53,7 +54,6 @@ const dot1000 = {
   ts: startDay,
   limit: 100000,
 }
-
 const dotGeneric = {
   mail: 1000,
   market: 1,
@@ -64,7 +64,6 @@ const dotGeneric = {
   ts: startDay,
   limit: 100000,
 }
-
 const endYesterdayDot = {
   ...dot1000,
   ts: moment.unix(startDay).subtract(1, 'day').unix(),
@@ -253,13 +252,13 @@ describe('getMoneyGraphData', function() {
     )).toEqual([
       {
         x: 0,
-        y: Math.round((3000 * 0.1 + 1 + 2 + 3) * 0.2),
+        y: (3000 * 0.1 + 1 + 2 + 3) * 0.2,
         ts: startDay,
         isTrimmed: false,
       },
       {
         x: simplify(1 / 24, 4),
-        y: Math.round((3000 * 0.12 + 1 + 2 + 3) * 0.2),
+        y: (3000 * 0.12 + 1 + 2 + 3) * 0.2,
         ts: startDay + 60 * 60,
         isTrimmed: false,
       },

@@ -6,6 +6,20 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+var _wtTraffic = require('wt-traffic');
+
+var _wtTraffic2 = _interopRequireDefault(_wtTraffic);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var last = function last(array) {
+  return array[array.length - 1];
+};
+var isObject = function isObject(a) {
+  return !!a && a.constructor === Object;
+};
+var AD_ENDED = 2;
+
 exports.default = function (moment) {
   var _traffic = (0, _wtTraffic2.default)(moment),
       getTimeStamps = _traffic.getTimeStamps,
@@ -21,6 +35,7 @@ exports.default = function (moment) {
       if (!Array.isArray(adList)) throw 'adList is not array';
       if (!Array.isArray(dots)) throw 'dots is not array';
       if (typeof timeStamp !== 'number') throw 'timeStamp is not a number';
+
       var moneyRatio = adPacket.moneyRatio,
           startDate = adPacket.startDate,
           earned = adPacket.earned,
@@ -32,8 +47,8 @@ exports.default = function (moment) {
       var inInterval = isConverter ? timeStamp > startDate && timeStamp <= endDate : timeStamp >= startDate && timeStamp <= endDate;
       var fakePeriodStart = earnedTs || startDate;
       var tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart;
-
       var isEndedInFakePeriod = false;
+
       if (inInterval && tsInFakePeriod) {
         var processedMoney = getDataSum(dots, fakePeriodStart, timeStamp) * moneyRatio;
         isEndedInFakePeriod = earned + processedMoney > budget;
@@ -50,6 +65,7 @@ exports.default = function (moment) {
 
       var fromTsInInterval = fromTs >= startDate && fromTs <= endDate;
       var toTsInInterval = toTs >= startDate && toTs <= endDate;
+
       if (fromTsInInterval || toTsInInterval) return adPacket;
     });
   };
@@ -73,11 +89,13 @@ exports.default = function (moment) {
 
         if (adRatio === 0) {
           var prevDotAdRatio = getSiteAdRatio([adPacket], dots, dot.ts, true);
+
           if (prevDotAdRatio > 0) {
             // money between earned dot and previous dot
             var uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0;
             return total += budget - earned - uncountedMoney;
           }
+
           if (startDate >= dot.ts && startDate < timeStamp && trafSpeed * moneyRatio * dotPeriod > budget) {
             // ad between two points
             return total += budget;
@@ -97,6 +115,7 @@ exports.default = function (moment) {
     if (!Array.isArray(dots)) throw 'dots is not array';
     if (typeof fromTs !== 'number') throw 'fromTs is not a number';
     if (typeof toTs !== 'number') throw 'fromTs is not a number';
+
     var filteredAdList = filterAdList(adList, fromTs, toTs);
 
     return filteredAdList.reduce(function (sum, adPacket) {
@@ -104,12 +123,14 @@ exports.default = function (moment) {
           endDate = adPacket.endDate,
           earnedTs = adPacket.earnedTs,
           status = adPacket.status;
+
       // accelerated processing of ads that are placed in the "fromTs - toTs" range
 
       if (status === AD_ENDED && startDate >= fromTs && earnedTs <= toTs) return sum += adPacket.earned;
 
       var converter = convertToMoney([adPacket], dots);
       var realToTs = Math.min(toTs, endDate);
+
       return sum += getDataSum(dots, fromTs, realToTs, converter);
     }, 0);
   };
@@ -148,6 +169,7 @@ exports.default = function (moment) {
     if (!adList.length || !dots.length) return 0;
 
     var timeStamp = period === 'yesterday' ? moment().subtract(1, 'day').unix() : moment().unix();
+
     return getTrafficSpeed(dots, period).total * getSiteAdRatio(adList, dots, timeStamp);
   };
 
@@ -160,7 +182,7 @@ exports.default = function (moment) {
 
     return getTrafficGraphData(dots, period).map(function (dot) {
       return _extends({}, dot, {
-        y: Math.round(dot.y * getSiteAdRatio(adList, dots, dot.ts))
+        y: dot.y * getSiteAdRatio(adList, dots, dot.ts)
       });
     });
   };
@@ -172,6 +194,7 @@ exports.default = function (moment) {
 
     var nowSpeed = getMoneySpeed(adList, dots, 'today');
     var yesterdaySpeed = getMoneySpeed(adList, dots, 'yesterday');
+
     return numberCompare(nowSpeed, yesterdaySpeed);
   };
 
@@ -190,6 +213,7 @@ exports.default = function (moment) {
 
     var earnedTs = adPacket.earnedTs || startDate;
     var processedMoney = getDataSum(dots, earnedTs, timeStamp || timeNow) * moneyRatio;
+
     return Math.min(budget, earned + processedMoney);
   };
 
@@ -199,6 +223,7 @@ exports.default = function (moment) {
     if (!Array.isArray(adList)) throw 'adList is not array';
     if (!Array.isArray(dots)) throw 'dots is not array';
     if (!adList.length || !dots.length) return 0;
+
     timeStamp = timeStamp || moment().unix();
 
     var lastDotTimeStamp = last(dots.sort(function (a, b) {
@@ -206,12 +231,14 @@ exports.default = function (moment) {
     })).ts;
     var filteredAdList = filterAdList(adList, lastDotTimeStamp, timeStamp);
     var converter = convertToMoney(filteredAdList, dots);
+
     return getDataSum(dots, lastDotTimeStamp, timeStamp, converter);
   };
 
   var getAdMoneyTimeEnd = function getAdMoneyTimeEnd(adPacket, dots) {
     if (!isObject(adPacket)) throw 'adPacket is not a object';
     if (!Array.isArray(dots)) throw 'dots is not array';
+
     var moneyRatio = adPacket.moneyRatio,
         startDate = adPacket.startDate,
         earned = adPacket.earned,
@@ -219,9 +246,9 @@ exports.default = function (moment) {
         budget = adPacket.budget,
         endDate = adPacket.endDate;
 
-    if (earnedTs && earned >= budget) return earnedTs;
     var fakePeriodStart = earnedTs || startDate;
 
+    if (earnedTs && earned >= budget) return earnedTs;
     if (earned + getDataSum(dots, fakePeriodStart, endDate) * moneyRatio <= budget) return endDate;
 
     var restMoney = budget - earned;
@@ -255,17 +282,3 @@ exports.default = function (moment) {
     simplify: simplify
   };
 };
-
-var _wtTraffic = require('wt-traffic');
-
-var _wtTraffic2 = _interopRequireDefault(_wtTraffic);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var last = function last(array) {
-  return array[array.length - 1];
-};
-var isObject = function isObject(a) {
-  return !!a && a.constructor === Object;
-};
-var AD_ENDED = 2;
