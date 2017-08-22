@@ -469,8 +469,22 @@ describe('getAllSitesMoney', function() {
         isFuture: index > 1,
       }))
     )
+    expect(getAllSitesMoney(
+      [
+        { id: 1, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ adPacket10000 ] },
+      ],
+      'yesterday'
+    )).toEqual(
+      range(0, 25).map(index => ({
+        x: simplify(index / 24, 4),
+        y: 100,
+        speed: 100,
+        ts: adPacket10000.startDate + 60 * 60 * index,
+        isFuture: false,
+      }))
+    )
   })
-  test('should return array of object. Last dot speed = 0', () => {
+  test('should return array of object. last dot speed = 0', () => {
     const result = range(0, 25).map(index => ({
       y: index < 24 ? 100 : 0,
       speed: index < 24 ? 100 : 0,
