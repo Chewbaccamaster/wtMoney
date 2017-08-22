@@ -8,6 +8,8 @@ const {
   getMoneySpeed,
   getMoneyGraphData,
   getMoneyChange,
+  getAllSitesMoney,
+  getAllSitesMoneyChange,
   getAdBudget,
   getFakeMoney,
   getAdMoneyTimeEnd,
@@ -449,5 +451,76 @@ describe('getAdMoneyTimeEnd', function() {
     expect(() => getAdMoneyTimeEnd()).toThrow()
     expect(() => getAdMoneyTimeEnd([])).toThrow()
     expect(() => getAdMoneyTimeEnd({}, {})).toThrow()
+  })
+})
+
+describe('getAllSitesMoney', function() {
+  test('should return array of object. speed = 100', () => {
+    expect(getAllSitesMoney(
+      [
+        { id: 1, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ adPacket10000 ] },
+      ]
+    )).toEqual(
+      range(0, 25).map(index => ({
+        x: simplify(index / 24, 4),
+        y: 100,
+        speed: 100,
+        ts: startDay + 60 * 60 * index,
+        isFuture: index > 1,
+      }))
+    )
+  })
+  test('should return array of object. Last dot speed = 0', () => {
+    const result = range(0, 25).map(index => ({
+      y: index < 24 ? 100 : 0,
+      speed: index < 24 ? 100 : 0,
+    }))
+    expect(getAllSitesMoney(
+      [ { id: 1, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ { ...adPacket10000, endDate: endDate - 60 * 60 } ] } ]
+    )).toMatchObject(result)
+    expect(getAllSitesMoney(
+      [ { id: 1, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ { ...adPacket10000, budget: 4700 } ] } ]
+    )).toMatchObject(result)
+  })
+  test('should return throw', () => {
+    expect(() => getAllSitesMoney()).toThrow()
+    expect(() => getAllSitesMoney({})).toThrow()
+  })
+})
+
+describe('getAllSitesMoneyChange', function() {
+  test('should return 0', () => {
+    expect(getAllSitesMoneyChange(
+      [
+        { id: 1, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ adPacket10000 ] },
+        { id: 2, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ adPacket10000 ] },
+      ]
+    )).toEqual(0)
+    expect(getAllSitesMoneyChange(
+      [
+        { id: 1, siteSpeed: [ ], ad: [ ] },
+        { id: 2, siteSpeed: [ ], ad: [ ] },
+      ]
+    )).toEqual(0)
+  })
+  test('should return -1', () => {
+    expect(getAllSitesMoneyChange(
+      [
+        { id: 1, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ { ...adPacket10000, endDate: startDay } ] },
+        { id: 2, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ adPacket10000 ] },
+      ]
+    )).toEqual(-1)
+  })
+  test('should return 1', () => {
+    expect(getAllSitesMoneyChange(
+      [
+        { id: 1, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ { ...adPacket10000, startDate: startDay } ] },
+        { id: 2, siteSpeed: [ endYesterdayDot, dot1000 ], ad: [ adPacket10000 ] },
+      ]
+    )).toEqual(1)
+  })
+  test('should return throw', () => {
+    expect(() => getAllSitesMoney()).toThrow()
+    expect(() => getAllSitesMoney({})).toThrow()
   })
 })

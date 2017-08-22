@@ -1,10 +1,13 @@
 import traffic from 'wt-traffic'
-const last = array => array[array.length-1]
-const isObject = a => !!a && a.constructor === Object
+
+const MIN_GRAPH_INTERVAL = 60 * 60
 const AD_ENDED = 2
+const last = array => array[ array.length - 1 ]
+const isObject = a => !!a && a.constructor === Object
 
 export default (moment) => {
-  const {  
+  const {
+    calcGraphX,
     getTimeStamps, 
     getDataSum, 
     getTrafficGraphData, 
@@ -14,9 +17,9 @@ export default (moment) => {
   } = traffic(moment)
 
   const getSiteAdRatio = (adList, dots, timeStamp, isConverter = false) => adList.reduce((sumRatio, adPacket) => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
-    if (typeof (timeStamp) !== 'number') throw 'timeStamp is not a number'
+    if (!Array.isArray(adList)) throw 'getSiteAdRatio. adList is not array'
+    if (!Array.isArray(dots)) throw 'getSiteAdRatio. dots is not array'
+    if (typeof timeStamp !== 'number') throw 'getSiteAdRatio. timeStamp is not a number'
 
     const { moneyRatio, startDate, earned, earnedTs, budget } = adPacket
     const isEnded = earnedTs && earned >= budget
@@ -75,10 +78,10 @@ export default (moment) => {
   }
 
   const getMoneySum = (adList, dots, fromTs, toTs) => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
-    if (typeof (fromTs) !== 'number') throw 'fromTs is not a number'
-    if (typeof (toTs) !== 'number') throw 'fromTs is not a number'
+    if (!Array.isArray(adList)) throw 'getMoneySum. adList is not array'
+    if (!Array.isArray(dots)) throw 'getMoneySum. dots is not array'
+    if (typeof fromTs !== 'number') throw 'getMoneySum. fromTs is not a number'
+    if (typeof toTs !== 'number') throw 'getMoneySum. fromTs is not a number'
 
     const filteredAdList = filterAdList(adList, fromTs, toTs)
 
@@ -96,8 +99,8 @@ export default (moment) => {
   }
 
   const getMoneyTodaySum = (adList, dots) => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+    if (!Array.isArray(adList)) throw 'getMoneyTodaySum. adList is not array'
+    if (!Array.isArray(dots)) throw 'getMoneyTodaySum. dots is not array'
     if (!adList.length || !dots.length) return 0
 
     const { timeStartDay, timeNow } = getTimeStamps()
@@ -106,8 +109,8 @@ export default (moment) => {
   }
 
   const getMoneyYesterdaySum = (adList, dots) => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+    if (!Array.isArray(adList)) throw 'getMoneyYesterdaySum. adList is not array'
+    if (!Array.isArray(dots)) throw 'getMoneyYesterdaySum. dots is not array'
     if (!adList.length || !dots.length) return 0
 
     const timeStamp = moment().subtract(1, 'day').unix()
@@ -116,19 +119,23 @@ export default (moment) => {
     return getMoneySum(adList, dots, timeStartDay, timeEndDay)
   }
 
-  const getMoneySpeed = (adList, dots, period = 'today') => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+  const getMoneySpeed = (adList, dots, period = 'today', timeStamp = null) => {
+    if (!Array.isArray(adList)) throw 'getMoneySpeed. adList is not array'
+    if (!Array.isArray(dots)) throw 'getMoneySpeed. dots is not array'
     if (!adList.length || !dots.length) return 0
 
-    const timeStamp = period === 'yesterday' ? moment().subtract(1, 'day').unix() : moment().unix()
+    const { timeNow } = getTimeStamps()
+    let time = timeNow
 
-    return getTrafficSpeed(dots, period).total * getSiteAdRatio(adList, dots, timeStamp)
+    if (period === 'yesterday') time = moment(timeNow * 1000).subtract(1, 'day').unix()
+    if (timeStamp) time = timeStamp
+
+    return getTrafficSpeed(dots, period, time).total * getSiteAdRatio(adList, dots, time)
   }
 
   const getMoneyGraphData = (adList, dots, period = 'today') => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+    if (!Array.isArray(adList)) throw 'getMoneyGraphData. adList is not array'
+    if (!Array.isArray(dots)) throw 'getMoneyGraphData. dots is not array'
     if (!adList.length || !dots.length) return []
 
     return getTrafficGraphData(dots, period).map(dot => ({
@@ -138,8 +145,8 @@ export default (moment) => {
   }
 
   const getMoneyChange = (adList, dots) => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+    if (!Array.isArray(adList)) throw 'getMoneyChange. adList is not array'
+    if (!Array.isArray(dots)) throw 'getMoneyChange. dots is not array'
     if (!adList.length || !dots.length) return 0
 
     const nowSpeed = getMoneySpeed(adList, dots, 'today')
@@ -149,8 +156,8 @@ export default (moment) => {
   }
 
   const getAdBudget = (adPacket, dots, timeStamp = null) => {
-    if (!isObject(adPacket)) throw 'adPacket is not a object'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+    if (!isObject(adPacket)) throw 'getAdBudget. adPacket is not a object'
+    if (!Array.isArray(dots)) throw 'getAdBudget. dots is not array'
     if (!adPacket || !dots.length) return 0
 
     const timeNow = moment().unix()
@@ -162,8 +169,8 @@ export default (moment) => {
   }
 
   const getFakeMoney = (adList, dots, timeStamp = null) => {
-    if (!Array.isArray(adList)) throw 'adList is not array'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+    if (!Array.isArray(adList)) throw 'getFakeMoney. adList is not array'
+    if (!Array.isArray(dots)) throw 'getFakeMoney. dots is not array'
     if (!adList.length || !dots.length) return 0
 
     timeStamp = timeStamp || moment().unix()
@@ -176,8 +183,8 @@ export default (moment) => {
   }
   
   const getAdMoneyTimeEnd = (adPacket, dots) => {
-    if (!isObject(adPacket)) throw 'adPacket is not a object'
-    if (!Array.isArray(dots)) throw 'dots is not array'
+    if (!isObject(adPacket)) throw 'getAdMoneyTimeEnd. adPacket is not a object'
+    if (!Array.isArray(dots)) throw 'getAdMoneyTimeEnd. dots is not array'
 
     const { moneyRatio, startDate, earned, earnedTs, budget, endDate } = adPacket
     const fakePeriodStart = earnedTs || startDate
@@ -204,6 +211,52 @@ export default (moment) => {
     return Math.ceil(desiredTs)
   }
 
+  const getAllSitesMoney = (sites, period = 'today') => {
+    if (!Array.isArray(sites)) throw 'getAllSitesMoney. sites is not array'
+
+    const timeStamp = period === 'yesterday' ? moment().subtract(1, 'day').unix() : moment().unix()
+    const { timeStartDay, timeEndDay, timeNow } = getTimeStamps(timeStamp)
+    let dots = []
+
+    for (let dotTs = timeStartDay; dotTs <= timeEndDay; dotTs += MIN_GRAPH_INTERVAL) {
+      dots.push(getAllSitesMoneyDotInfo(sites, dotTs, timeEndDay, timeNow))
+
+      if (timeStamp > dotTs && timeStamp < dotTs + MIN_GRAPH_INTERVAL) {
+        dots.push(getAllSitesMoneyDotInfo(sites, timeStamp, timeEndDay, timeNow))
+      }
+    }
+
+    return dots
+  }
+
+  const getAllSitesMoneyDotInfo = (sites, dotTs, timeEndDay = null, timeNow = null) => {
+    if (!Array.isArray(sites)) throw 'getAllSitesMoneyDotInfo. sites is not array'
+    if (typeof dotTs !== 'number') throw 'getAllSitesMoneyDotInfo. dotTs is not a number'
+
+    const isFuture = dotTs > timeNow
+    const x = dotTs === timeEndDay ? 1 : calcGraphX(dotTs)
+    const speed = sites.reduce((totalSpeed, curSite) => totalSpeed += getMoneySpeed(curSite.ad, curSite.siteSpeed, null, dotTs), 0)
+
+    return {
+      speed,
+      isFuture,
+      ts: dotTs,
+      y: speed,
+      x,
+    }
+  }
+  
+  const getAllSitesMoneyChange = sites => {
+    if (!Array.isArray(sites)) throw 'getAllSitesMoneyChange. sites is not array'
+
+    const timeStamp = moment().subtract(1, 'day').unix()
+    const { timeNow } = getTimeStamps()
+    const nowSpeed = getAllSitesMoneyDotInfo(sites, timeNow).speed
+    const yesterdaySpeed = getAllSitesMoneyDotInfo(sites, timeStamp).speed
+
+    return numberCompare(nowSpeed, yesterdaySpeed)
+  }
+
   return {
     getMoneyTodaySum,
     getMoneyYesterdaySum,
@@ -213,6 +266,8 @@ export default (moment) => {
     getAdBudget,
     getFakeMoney,
     getAdMoneyTimeEnd,
+    getAllSitesMoney,
+    getAllSitesMoneyChange,
     simplify,
   }
 }

@@ -12,16 +12,18 @@ var _wtTraffic2 = _interopRequireDefault(_wtTraffic);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var MIN_GRAPH_INTERVAL = 60 * 60;
+var AD_ENDED = 2;
 var last = function last(array) {
   return array[array.length - 1];
 };
 var isObject = function isObject(a) {
   return !!a && a.constructor === Object;
 };
-var AD_ENDED = 2;
 
 exports.default = function (moment) {
   var _traffic = (0, _wtTraffic2.default)(moment),
+      calcGraphX = _traffic.calcGraphX,
       getTimeStamps = _traffic.getTimeStamps,
       getDataSum = _traffic.getDataSum,
       getTrafficGraphData = _traffic.getTrafficGraphData,
@@ -32,9 +34,9 @@ exports.default = function (moment) {
   var getSiteAdRatio = function getSiteAdRatio(adList, dots, timeStamp) {
     var isConverter = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     return adList.reduce(function (sumRatio, adPacket) {
-      if (!Array.isArray(adList)) throw 'adList is not array';
-      if (!Array.isArray(dots)) throw 'dots is not array';
-      if (typeof timeStamp !== 'number') throw 'timeStamp is not a number';
+      if (!Array.isArray(adList)) throw 'getSiteAdRatio. adList is not array';
+      if (!Array.isArray(dots)) throw 'getSiteAdRatio. dots is not array';
+      if (typeof timeStamp !== 'number') throw 'getSiteAdRatio. timeStamp is not a number';
 
       var moneyRatio = adPacket.moneyRatio,
           startDate = adPacket.startDate,
@@ -111,10 +113,10 @@ exports.default = function (moment) {
   };
 
   var getMoneySum = function getMoneySum(adList, dots, fromTs, toTs) {
-    if (!Array.isArray(adList)) throw 'adList is not array';
-    if (!Array.isArray(dots)) throw 'dots is not array';
-    if (typeof fromTs !== 'number') throw 'fromTs is not a number';
-    if (typeof toTs !== 'number') throw 'fromTs is not a number';
+    if (!Array.isArray(adList)) throw 'getMoneySum. adList is not array';
+    if (!Array.isArray(dots)) throw 'getMoneySum. dots is not array';
+    if (typeof fromTs !== 'number') throw 'getMoneySum. fromTs is not a number';
+    if (typeof toTs !== 'number') throw 'getMoneySum. fromTs is not a number';
 
     var filteredAdList = filterAdList(adList, fromTs, toTs);
 
@@ -136,8 +138,8 @@ exports.default = function (moment) {
   };
 
   var getMoneyTodaySum = function getMoneyTodaySum(adList, dots) {
-    if (!Array.isArray(adList)) throw 'adList is not array';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!Array.isArray(adList)) throw 'getMoneyTodaySum. adList is not array';
+    if (!Array.isArray(dots)) throw 'getMoneyTodaySum. dots is not array';
     if (!adList.length || !dots.length) return 0;
 
     var _getTimeStamps = getTimeStamps(),
@@ -148,8 +150,8 @@ exports.default = function (moment) {
   };
 
   var getMoneyYesterdaySum = function getMoneyYesterdaySum(adList, dots) {
-    if (!Array.isArray(adList)) throw 'adList is not array';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!Array.isArray(adList)) throw 'getMoneyYesterdaySum. adList is not array';
+    if (!Array.isArray(dots)) throw 'getMoneyYesterdaySum. dots is not array';
     if (!adList.length || !dots.length) return 0;
 
     var timeStamp = moment().subtract(1, 'day').unix();
@@ -163,21 +165,28 @@ exports.default = function (moment) {
 
   var getMoneySpeed = function getMoneySpeed(adList, dots) {
     var period = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'today';
+    var timeStamp = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
 
-    if (!Array.isArray(adList)) throw 'adList is not array';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!Array.isArray(adList)) throw 'getMoneySpeed. adList is not array';
+    if (!Array.isArray(dots)) throw 'getMoneySpeed. dots is not array';
     if (!adList.length || !dots.length) return 0;
 
-    var timeStamp = period === 'yesterday' ? moment().subtract(1, 'day').unix() : moment().unix();
+    var _getTimeStamps3 = getTimeStamps(),
+        timeNow = _getTimeStamps3.timeNow;
 
-    return getTrafficSpeed(dots, period).total * getSiteAdRatio(adList, dots, timeStamp);
+    var time = timeNow;
+
+    if (period === 'yesterday') time = moment(timeNow * 1000).subtract(1, 'day').unix();
+    if (timeStamp) time = timeStamp;
+
+    return getTrafficSpeed(dots, period, time).total * getSiteAdRatio(adList, dots, time);
   };
 
   var getMoneyGraphData = function getMoneyGraphData(adList, dots) {
     var period = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'today';
 
-    if (!Array.isArray(adList)) throw 'adList is not array';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!Array.isArray(adList)) throw 'getMoneyGraphData. adList is not array';
+    if (!Array.isArray(dots)) throw 'getMoneyGraphData. dots is not array';
     if (!adList.length || !dots.length) return [];
 
     return getTrafficGraphData(dots, period).map(function (dot) {
@@ -188,8 +197,8 @@ exports.default = function (moment) {
   };
 
   var getMoneyChange = function getMoneyChange(adList, dots) {
-    if (!Array.isArray(adList)) throw 'adList is not array';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!Array.isArray(adList)) throw 'getMoneyChange. adList is not array';
+    if (!Array.isArray(dots)) throw 'getMoneyChange. dots is not array';
     if (!adList.length || !dots.length) return 0;
 
     var nowSpeed = getMoneySpeed(adList, dots, 'today');
@@ -201,8 +210,8 @@ exports.default = function (moment) {
   var getAdBudget = function getAdBudget(adPacket, dots) {
     var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-    if (!isObject(adPacket)) throw 'adPacket is not a object';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!isObject(adPacket)) throw 'getAdBudget. adPacket is not a object';
+    if (!Array.isArray(dots)) throw 'getAdBudget. dots is not array';
     if (!adPacket || !dots.length) return 0;
 
     var timeNow = moment().unix();
@@ -220,8 +229,8 @@ exports.default = function (moment) {
   var getFakeMoney = function getFakeMoney(adList, dots) {
     var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-    if (!Array.isArray(adList)) throw 'adList is not array';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!Array.isArray(adList)) throw 'getFakeMoney. adList is not array';
+    if (!Array.isArray(dots)) throw 'getFakeMoney. dots is not array';
     if (!adList.length || !dots.length) return 0;
 
     timeStamp = timeStamp || moment().unix();
@@ -236,8 +245,8 @@ exports.default = function (moment) {
   };
 
   var getAdMoneyTimeEnd = function getAdMoneyTimeEnd(adPacket, dots) {
-    if (!isObject(adPacket)) throw 'adPacket is not a object';
-    if (!Array.isArray(dots)) throw 'dots is not array';
+    if (!isObject(adPacket)) throw 'getAdMoneyTimeEnd. adPacket is not a object';
+    if (!Array.isArray(dots)) throw 'getAdMoneyTimeEnd. dots is not array';
 
     var moneyRatio = adPacket.moneyRatio,
         startDate = adPacket.startDate,
@@ -270,6 +279,67 @@ exports.default = function (moment) {
     return Math.ceil(desiredTs);
   };
 
+  var getAllSitesMoney = function getAllSitesMoney(sites) {
+    var period = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'today';
+
+    if (!Array.isArray(sites)) throw 'getAllSitesMoney. sites is not array';
+
+    var timeStamp = period === 'yesterday' ? moment().subtract(1, 'day').unix() : moment().unix();
+
+    var _getTimeStamps4 = getTimeStamps(timeStamp),
+        timeStartDay = _getTimeStamps4.timeStartDay,
+        timeEndDay = _getTimeStamps4.timeEndDay,
+        timeNow = _getTimeStamps4.timeNow;
+
+    var dots = [];
+
+    for (var dotTs = timeStartDay; dotTs <= timeEndDay; dotTs += MIN_GRAPH_INTERVAL) {
+      dots.push(getAllSitesMoneyDotInfo(sites, dotTs, timeEndDay, timeNow));
+
+      if (timeStamp > dotTs && timeStamp < dotTs + MIN_GRAPH_INTERVAL) {
+        dots.push(getAllSitesMoneyDotInfo(sites, timeStamp, timeEndDay, timeNow));
+      }
+    }
+
+    return dots;
+  };
+
+  var getAllSitesMoneyDotInfo = function getAllSitesMoneyDotInfo(sites, dotTs) {
+    var timeEndDay = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    var timeNow = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+    if (!Array.isArray(sites)) throw 'getAllSitesMoneyDotInfo. sites is not array';
+    if (typeof dotTs !== 'number') throw 'getAllSitesMoneyDotInfo. dotTs is not a number';
+
+    var isFuture = dotTs > timeNow;
+    var x = dotTs === timeEndDay ? 1 : calcGraphX(dotTs);
+    var speed = sites.reduce(function (totalSpeed, curSite) {
+      return totalSpeed += getMoneySpeed(curSite.ad, curSite.siteSpeed, null, dotTs);
+    }, 0);
+
+    return {
+      speed: speed,
+      isFuture: isFuture,
+      ts: dotTs,
+      y: speed,
+      x: x
+    };
+  };
+
+  var getAllSitesMoneyChange = function getAllSitesMoneyChange(sites) {
+    if (!Array.isArray(sites)) throw 'getAllSitesMoneyChange. sites is not array';
+
+    var timeStamp = moment().subtract(1, 'day').unix();
+
+    var _getTimeStamps5 = getTimeStamps(),
+        timeNow = _getTimeStamps5.timeNow;
+
+    var nowSpeed = getAllSitesMoneyDotInfo(sites, timeNow).speed;
+    var yesterdaySpeed = getAllSitesMoneyDotInfo(sites, timeStamp).speed;
+
+    return numberCompare(nowSpeed, yesterdaySpeed);
+  };
+
   return {
     getMoneyTodaySum: getMoneyTodaySum,
     getMoneyYesterdaySum: getMoneyYesterdaySum,
@@ -279,6 +349,8 @@ exports.default = function (moment) {
     getAdBudget: getAdBudget,
     getFakeMoney: getFakeMoney,
     getAdMoneyTimeEnd: getAdMoneyTimeEnd,
+    getAllSitesMoney: getAllSitesMoney,
+    getAllSitesMoneyChange: getAllSitesMoneyChange,
     simplify: simplify
   };
 };
