@@ -103,6 +103,8 @@ exports.default = function (moment) {
         if (adRatio === 0) {
           var prevDotAdRatio = getSiteAdRatio([adPacket], dots, dot.ts, true);
 
+          if (endDate < dot.ts) return total;
+
           if (prevDotAdRatio > 0) {
             // money between earned dot and previous dot
             var uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0;
