@@ -2,6 +2,7 @@ import traffic from 'wt-traffic'
 
 const MIN_GRAPH_INTERVAL = 60 * 60
 const AD_ENDED = 2
+const AD_ACTIVE = 1
 const last = array => array[ array.length - 1 ]
 const isObject = a => !!a && a.constructor === Object
 
@@ -16,35 +17,44 @@ export default (moment) => {
     numberCompare,
   } = traffic(moment)
 
-  const getSiteAdRatio = (adList, dots, timeStamp, isConverter = false) => adList.reduce((sumRatio, adPacket) => {
+  const getSiteAdRatio = (adList, dots, timeStamp, isConverter = false) => {
     if (!Array.isArray(adList)) throw 'getSiteAdRatio. adList is not array'
     if (!Array.isArray(dots)) throw 'getSiteAdRatio. dots is not array'
     if (typeof timeStamp !== 'number') throw 'getSiteAdRatio. timeStamp is not a number'
 
-    const { moneyRatio, startDate, earned, earnedTs, budget } = adPacket
-    const isEnded = earnedTs && earned >= budget
-    const endDate = isEnded ? earnedTs : adPacket.endDate
-    const inInterval = isConverter 
-      ? timeStamp > startDate && timeStamp <= endDate
-      : timeStamp >= startDate && timeStamp <= endDate
-    const fakePeriodStart = earnedTs || startDate
-    const tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart
-    let isEndedInFakePeriod = false
+    return adList.reduce((sumRatio, adPacket) => {
+      const { moneyRatio, startDate, earned, status, earnedTs, budget } = adPacket
 
-    if (inInterval && tsInFakePeriod) {
-      const processedMoney = getDataSum(dots, fakePeriodStart, timeStamp) * moneyRatio
-      isEndedInFakePeriod = earned + processedMoney > budget
-    }
+      if (status !== AD_ENDED && status !== AD_ACTIVE) return sumRatio
 
-    return sumRatio += inInterval && !isEndedInFakePeriod ? moneyRatio : 0
-  }, 0)
+      const isEnded = status === AD_ENDED || (earnedTs && earned >= budget)
+      const endDate = isEnded ? earnedTs : adPacket.endDate
+      const inInterval = isConverter 
+        ? timeStamp > startDate && timeStamp <= endDate
+        : timeStamp >= startDate && timeStamp <= endDate
+      const fakePeriodStart = earnedTs || startDate
+      const tsInFakePeriod = !isEnded && timeStamp > fakePeriodStart
+      let isEndedInFakePeriod = false
+
+      if (inInterval && tsInFakePeriod) {
+        const processedMoney = getDataSum(dots, fakePeriodStart, timeStamp) * moneyRatio
+        isEndedInFakePeriod = earned + processedMoney > budget
+      }
+
+      return sumRatio += inInterval && !isEndedInFakePeriod ? moneyRatio : 0
+    }, 0)
+  }
 
   const filterAdList = (adList, fromTs, toTs) => adList.filter(adPacket => {
-    const { startDate, endDate } = adPacket
+    const { startDate, status, earnedTs } = adPacket
+
+    if (status !== AD_ENDED && status !== AD_ACTIVE) return false
+
+    const endDate = status === AD_ENDED ? earnedTs : adPacket.endDate
     const fromTsInInterval = fromTs >= startDate && fromTs <= endDate
     const toTsInInterval = toTs >= startDate && toTs <= endDate
 
-    if (fromTsInInterval || toTsInInterval) return adPacket
+    if (fromTsInInterval || toTsInInterval) return true
   })
 
   const convertToMoney = (adList, dots) => {
@@ -181,7 +191,7 @@ export default (moment) => {
 
     return getDataSum(dots, lastDotTimeStamp, timeStamp, converter)
   }
-  
+
   const getAdMoneyTimeEnd = (adPacket, dots) => {
     if (!isObject(adPacket)) throw 'getAdMoneyTimeEnd. adPacket is not a object'
     if (!Array.isArray(dots)) throw 'getAdMoneyTimeEnd. dots is not array'
@@ -245,7 +255,7 @@ export default (moment) => {
       x,
     }
   }
-  
+
   const getAllSitesMoneyChange = sites => {
     if (!Array.isArray(sites)) throw 'getAllSitesMoneyChange. sites is not array'
 

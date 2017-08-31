@@ -14,6 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var MIN_GRAPH_INTERVAL = 60 * 60;
 var AD_ENDED = 2;
+var AD_ACTIVE = 1;
 var last = function last(array) {
   return array[array.length - 1];
 };
@@ -33,18 +34,23 @@ exports.default = function (moment) {
 
   var getSiteAdRatio = function getSiteAdRatio(adList, dots, timeStamp) {
     var isConverter = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-    return adList.reduce(function (sumRatio, adPacket) {
-      if (!Array.isArray(adList)) throw 'getSiteAdRatio. adList is not array';
-      if (!Array.isArray(dots)) throw 'getSiteAdRatio. dots is not array';
-      if (typeof timeStamp !== 'number') throw 'getSiteAdRatio. timeStamp is not a number';
 
+    if (!Array.isArray(adList)) throw 'getSiteAdRatio. adList is not array';
+    if (!Array.isArray(dots)) throw 'getSiteAdRatio. dots is not array';
+    if (typeof timeStamp !== 'number') throw 'getSiteAdRatio. timeStamp is not a number';
+
+    return adList.reduce(function (sumRatio, adPacket) {
       var moneyRatio = adPacket.moneyRatio,
           startDate = adPacket.startDate,
           earned = adPacket.earned,
+          status = adPacket.status,
           earnedTs = adPacket.earnedTs,
           budget = adPacket.budget;
 
-      var isEnded = earnedTs && earned >= budget;
+
+      if (status !== AD_ENDED && status !== AD_ACTIVE) return sumRatio;
+
+      var isEnded = status === AD_ENDED || earnedTs && earned >= budget;
       var endDate = isEnded ? earnedTs : adPacket.endDate;
       var inInterval = isConverter ? timeStamp > startDate && timeStamp <= endDate : timeStamp >= startDate && timeStamp <= endDate;
       var fakePeriodStart = earnedTs || startDate;
@@ -63,12 +69,17 @@ exports.default = function (moment) {
   var filterAdList = function filterAdList(adList, fromTs, toTs) {
     return adList.filter(function (adPacket) {
       var startDate = adPacket.startDate,
-          endDate = adPacket.endDate;
+          status = adPacket.status,
+          earnedTs = adPacket.earnedTs;
 
+
+      if (status !== AD_ENDED && status !== AD_ACTIVE) return false;
+
+      var endDate = status === AD_ENDED ? earnedTs : adPacket.endDate;
       var fromTsInInterval = fromTs >= startDate && fromTs <= endDate;
       var toTsInInterval = toTs >= startDate && toTs <= endDate;
 
-      if (fromTsInInterval || toTsInInterval) return adPacket;
+      if (fromTsInInterval || toTsInInterval) return true;
     });
   };
 

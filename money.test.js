@@ -29,6 +29,7 @@ const endDate = moment.unix(startDay).add(1, 'day').unix()
 moment.now = jest.fn(() => (startDay + 1 * 60 * 60) * 1000)
 
 const adPacket10000 = {
+  status: 1,
   startDate: moment.unix(startDay).subtract(1, 'day').unix(),
   endDate: moment.unix(endDate).add(1, 'day').unix(),
   endDateMoney: null,
@@ -38,6 +39,7 @@ const adPacket10000 = {
   earnedTs: null,
 }
 const adPacket100 = {
+  status: 1,
   startDate: moment.unix(startDay).subtract(1, 'day').unix(),
   endDate: moment.unix(endDate).add(1, 'day').unix(),
   endDateMoney: null,
