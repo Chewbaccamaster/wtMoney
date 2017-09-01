@@ -144,6 +144,10 @@ describe('getMoneyTodaySum', function() {
       [ ],
       [ ]
     )).toBe(0)
+    expect(getMoneyTodaySum(
+      [ { ...adPacket10000, status: 0 } ],
+      [ endYesterdayDot, dot1000 ]
+    )).toBe(0)
   })
   test('should return throw', () => {
     expect(() => getMoneyTodaySum()).toThrow()
@@ -402,12 +406,32 @@ describe('getFakeMoney', function() {
       [ { ...adPacket10000, startDate: startDay + 30 * 60 } ],
       [ dot1000, { ...dot1000, ts: startDay + 30 * 60 } ]
     )).toBe(50)
+    expect(getFakeMoney(
+      [ { ...adPacket10000, startDate: startDay, budget: 50 } ],
+      [ { ...dot1000, ts: startDay } ]
+    )).toBe(50)
+    expect(getFakeMoney(
+      [ { ...adPacket10000, earned: 10000 - 50, earnedTs: startDay } ],
+      [ dot1000 ]
+    )).toBe(50)
   })
   test('should return 0', () => {
     expect(getFakeMoney(
       [ ],
       [ endYesterdayDot, dot1000 ]
     )).toBe(0)
+  })
+  test('should return 25', () => {
+    const adStart = moment().unix() - 60 * 30
+    expect(getFakeMoney(
+      [ { 
+        ...adPacket10000,
+        earnderTs: adStart, 
+        startDate: adStart, 
+        endDate: adStart + 60 * 15,
+      } ],
+      [ { ...dot1000, ts: adStart }]
+    )).toBe(25)
   })
   test('should return throw', () => {
     expect(() => getFakeMoney()).toThrow()

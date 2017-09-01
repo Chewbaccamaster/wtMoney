@@ -48,6 +48,7 @@ exports.default = function (moment) {
           budget = adPacket.budget;
 
 
+      if (typeof status !== 'number') throw 'getSiteAdRatio. status is not a number';
       if (status !== AD_ENDED && status !== AD_ACTIVE) return sumRatio;
 
       var isEnded = status === AD_ENDED || earnedTs && earned >= budget;
@@ -103,17 +104,20 @@ exports.default = function (moment) {
         if (adRatio === 0) {
           var prevDotAdRatio = getSiteAdRatio([adPacket], dots, dot.ts, true);
 
-          if (endDate < dot.ts) return total;
-
           if (prevDotAdRatio > 0) {
             // money between earned dot and previous dot
             var uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0;
             return total += budget - earned - uncountedMoney;
           }
 
-          if (startDate >= dot.ts && startDate < timeStamp && trafSpeed * moneyRatio * dotPeriod > budget) {
-            // ad between two points
-            return total += budget;
+          // ad between two points
+          if (startDate >= dot.ts && startDate < timeStamp) {
+
+            // end by budget
+            if (trafSpeed * moneyRatio * dotPeriod > budget) return total += budget;
+
+            // end by time
+            if (endDate > dot.ts && endDate < timeStamp) return total += getDataSum(dots, startDate, endDate) * moneyRatio;
           }
         }
 
@@ -141,6 +145,7 @@ exports.default = function (moment) {
 
       // accelerated processing of ads that are placed in the "fromTs - toTs" range
 
+      if (typeof status !== 'number') throw 'getMoneySum. status is not a number';
       if (status === AD_ENDED && startDate >= fromTs && earnedTs <= toTs) return sum += adPacket.earned;
 
       var converter = convertToMoney([adPacket], dots);
