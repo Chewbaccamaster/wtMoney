@@ -68,7 +68,7 @@ export default (moment) => {
         if (adRatio === 0) {
           const prevDotAdRatio = getSiteAdRatio([ adPacket ], dots, dot.ts, true)
 
-          if (prevDotAdRatio > 0) {
+          if (prevDotAdRatio > 0 && endDate > timeStamp) {
             // money between earned dot and previous dot
             const uncountedMoney = earnedTs < dot.ts ? getDataSum(dots, earnedTs, dot.ts) * moneyRatio : 0
             return total += budget - earned - uncountedMoney
