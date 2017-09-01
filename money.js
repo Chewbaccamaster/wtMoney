@@ -52,10 +52,11 @@ export default (moment) => {
     if (status !== AD_ENDED && status !== AD_ACTIVE) return false
 
     const endDate = status === AD_ENDED ? earnedTs : adPacket.endDate
-    const fromTsInInterval = fromTs >= startDate && fromTs <= endDate
-    const toTsInInterval = toTs >= startDate && toTs <= endDate
+    const startDateInInterval = startDate >= fromTs && startDate <= toTs
+    const endDateInInterval = endDate >= fromTs && endDate <= toTs
+    const periodInInterval = startDate <= fromTs && endDate >= toTs
 
-    if (fromTsInInterval || toTsInInterval) return true
+    if (startDateInInterval || endDateInInterval || periodInInterval) return true
   })
 
   const convertToMoney = (adList, dots) => {

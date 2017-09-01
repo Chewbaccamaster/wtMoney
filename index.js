@@ -77,10 +77,11 @@ exports.default = function (moment) {
       if (status !== AD_ENDED && status !== AD_ACTIVE) return false;
 
       var endDate = status === AD_ENDED ? earnedTs : adPacket.endDate;
-      var fromTsInInterval = fromTs >= startDate && fromTs <= endDate;
-      var toTsInInterval = toTs >= startDate && toTs <= endDate;
+      var startDateInInterval = startDate >= fromTs && startDate <= toTs;
+      var endDateInInterval = endDate >= fromTs && endDate <= toTs;
+      var periodInInterval = startDate <= fromTs && endDate >= toTs;
 
-      if (fromTsInInterval || toTsInInterval) return true;
+      if (startDateInInterval || endDateInInterval || periodInInterval) return true;
     });
   };
 
