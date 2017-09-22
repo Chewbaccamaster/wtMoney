@@ -186,19 +186,34 @@ export default (moment) => {
     return Math.min(budget, earned + processedMoney)
   }
 
-  const getFakeMoney = (adList, dots, timeStamp = null) => {
-    if (!Array.isArray(adList)) throw 'getFakeMoney. adList is not array'
-    if (!Array.isArray(dots)) throw 'getFakeMoney. dots is not array'
-    if (!adList.length || !dots.length) return 0
+  const getFakeMoney = (() => {
+    let cache = {}
 
-    timeStamp = timeStamp || moment().unix()
+    return (adList, dots, timeStamp = null) => {
+      if (!Array.isArray(adList)) throw 'getFakeMoney. adList is not array'
+      if (!Array.isArray(dots)) throw 'getFakeMoney. dots is not array'
+      if (!adList.length || !dots.length) return 0
 
-    const lastDotTimeStamp = last(dots.sort((a, b) => a.ts - b.ts)).ts
-    const filteredAdList = filterAdList(adList, lastDotTimeStamp, timeStamp)
-    const converter = convertToMoney(filteredAdList, dots)
+      timeStamp = timeStamp || moment().unix()
 
-    return getDataSum(dots, lastDotTimeStamp, timeStamp, converter)
-  }
+      if (cache[ timeStamp ]) {
+        const cacheItem = cache[ timeStamp ]
+        if (cacheItem.adList === adList && cacheItem.dots === dots) return cacheItem.result
+      }
+
+      const lastDotTimeStamp = last(dots.sort((a, b) => a.ts - b.ts)).ts
+      const filteredAdList = filterAdList(adList, lastDotTimeStamp, timeStamp)
+      const converter = convertToMoney(filteredAdList, dots)
+
+      cache[ timeStamp ] = {
+        result: getDataSum(dots, lastDotTimeStamp, timeStamp, converter),
+        adList,
+        dots
+      }
+
+      return cache[ timeStamp ].result
+    }
+  })()
 
   const getAdMoneyTimeEnd = (adPacket, dots) => {
     if (!isObject(adPacket)) throw 'getAdMoneyTimeEnd. adPacket is not a object'

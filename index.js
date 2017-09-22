@@ -245,23 +245,38 @@ exports.default = function (moment) {
     return Math.min(budget, earned + processedMoney);
   };
 
-  var getFakeMoney = function getFakeMoney(adList, dots) {
-    var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+  var getFakeMoney = function () {
+    var cache = {};
 
-    if (!Array.isArray(adList)) throw 'getFakeMoney. adList is not array';
-    if (!Array.isArray(dots)) throw 'getFakeMoney. dots is not array';
-    if (!adList.length || !dots.length) return 0;
+    return function (adList, dots) {
+      var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-    timeStamp = timeStamp || moment().unix();
+      if (!Array.isArray(adList)) throw 'getFakeMoney. adList is not array';
+      if (!Array.isArray(dots)) throw 'getFakeMoney. dots is not array';
+      if (!adList.length || !dots.length) return 0;
 
-    var lastDotTimeStamp = last(dots.sort(function (a, b) {
-      return a.ts - b.ts;
-    })).ts;
-    var filteredAdList = filterAdList(adList, lastDotTimeStamp, timeStamp);
-    var converter = convertToMoney(filteredAdList, dots);
+      timeStamp = timeStamp || moment().unix();
 
-    return getDataSum(dots, lastDotTimeStamp, timeStamp, converter);
-  };
+      if (cache[timeStamp]) {
+        var cacheItem = cache[timeStamp];
+        if (cacheItem.adList === adList && cacheItem.dots === dots) return cacheItem.result;
+      }
+
+      var lastDotTimeStamp = last(dots.sort(function (a, b) {
+        return a.ts - b.ts;
+      })).ts;
+      var filteredAdList = filterAdList(adList, lastDotTimeStamp, timeStamp);
+      var converter = convertToMoney(filteredAdList, dots);
+
+      cache[timeStamp] = {
+        result: getDataSum(dots, lastDotTimeStamp, timeStamp, converter),
+        adList: adList,
+        dots: dots
+      };
+
+      return cache[timeStamp].result;
+    };
+  }();
 
   var getAdMoneyTimeEnd = function getAdMoneyTimeEnd(adPacket, dots) {
     if (!isObject(adPacket)) throw 'getAdMoneyTimeEnd. adPacket is not a object';
