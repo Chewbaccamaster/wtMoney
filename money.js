@@ -151,12 +151,13 @@ export default (moment) => {
     return getTrafficSpeed(dots, period, time).total * getSiteAdRatio(adList, dots, time)
   }
 
-  const getMoneyGraphData = (adList, dots, period = 'today') => {
+  const getMoneyGraphData = (adList, dots, period = 'today', traffic = null) => {
     if (!Array.isArray(adList)) throw 'getMoneyGraphData. adList is not array'
     if (!Array.isArray(dots)) throw 'getMoneyGraphData. dots is not array'
+    if (traffic && !Array.isArray(traffic)) throw 'getMoneyGraphData. traffic is not array'
     if (!adList.length || !dots.length) return []
 
-    return getTrafficGraphData(dots, period).map(dot => ({
+    return getTrafficGraphData(dots, period, traffic).map(dot => ({
       ...dot,
       y: dot.y * getSiteAdRatio(adList, dots, dot.ts),
     }))

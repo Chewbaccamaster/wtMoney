@@ -203,12 +203,14 @@ exports.default = function (moment) {
 
   var getMoneyGraphData = function getMoneyGraphData(adList, dots) {
     var period = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'today';
+    var traffic = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
 
     if (!Array.isArray(adList)) throw 'getMoneyGraphData. adList is not array';
     if (!Array.isArray(dots)) throw 'getMoneyGraphData. dots is not array';
+    if (traffic && !Array.isArray(traffic)) throw 'getMoneyGraphData. traffic is not array';
     if (!adList.length || !dots.length) return [];
 
-    return getTrafficGraphData(dots, period).map(function (dot) {
+    return getTrafficGraphData(dots, period, traffic).map(function (dot) {
       return _extends({}, dot, {
         y: dot.y * getSiteAdRatio(adList, dots, dot.ts)
       });
